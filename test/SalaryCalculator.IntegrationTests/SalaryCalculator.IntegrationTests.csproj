@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <IsPublishable>false</IsPublishable>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="7.0.9" />  
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="Moq" />
+        <PackageReference Include="xunit.runner.visualstudio">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="xunit" Version="2.5.1-pre.12" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\SalaryCalculator.WebApi\SalaryCalculator.WebApi.csproj" />
+    </ItemGroup>
+ 
+
+</Project>
