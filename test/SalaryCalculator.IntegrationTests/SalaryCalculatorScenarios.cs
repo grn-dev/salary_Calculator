@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using SalaryCalculator.FunctionalTests;
 using SalaryCalculator.IntegrationTests.Extensions;
@@ -104,6 +105,21 @@ namespace SalaryCalculatoring.IntegrationTests
             Assert.NotNull(employee.ReceivedSalary);
             Assert.NotNull(employee.FirstName);
             Assert.NotNull(employee.LastName);
+        }
+
+        [Fact]
+        public async Task When_GetRange_Expect_response_ok_status_code()
+        {
+            using var server = CreateServer();
+            var url = Get.GetRangeUrl("Amir", "Afshani", "14000801", "14020801");
+            var response = await server.CreateClient()
+                .GetAsync(url);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            response.EnsureSuccessStatusCode();
+
+            var employee = response.Content.ReadResponse<List<EmployeeDtoQuery>>();
+            Assert.NotEqual(0, employee.Count);
         }
 
         [Fact]
