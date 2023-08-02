@@ -1,5 +1,7 @@
 ﻿using System.Xml.Serialization;
+using Dapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SalaryCalculator.Core;
@@ -29,20 +31,20 @@ public class SalaryEmployeeController : ControllerBase
 
     [HttpPost]
     [Route("{datatype}/[controller]")]
-    public async Task<IActionResult> HttpPost(string datatype, RegisterSalaryEmployeeRequestDto employeeRequestDto)
+    public async Task<IActionResult> HttpPost(string datatype, RegisterSalaryEmployeeRequest employeeRequest)
     {
         EmployeeDto deserializeEmployee = new();
         switch (datatype)
         {
             case "json":
             {
-                deserializeEmployee = JsonConvert.DeserializeObject<EmployeeDto>(employeeRequestDto.Data);
+                deserializeEmployee = JsonConvert.DeserializeObject<EmployeeDto>(employeeRequest.Data);
             }
                 break;
             case "xml":
             {
                 XmlSerializer serializer = new XmlSerializer(typeof(EmployeeDto));
-                using (TextReader reader = new StringReader(employeeRequestDto.Data))
+                using (TextReader reader = new StringReader(employeeRequest.Data))
                 {
                     deserializeEmployee = (EmployeeDto)serializer.Deserialize(reader);
                 }
@@ -55,22 +57,19 @@ public class SalaryEmployeeController : ControllerBase
                 break;
             case "custom":
             {
-                deserializeEmployee = employeeRequestDto.Data.GetEmployee();
+                deserializeEmployee = employeeRequest.Data.GetEmployee();
             }
                 break;
             default:
                 throw new ArgumentOutOfRangeException(datatype);
         }
 
-        //todo persist employee
-        if (deserializeEmployee is null)
-            throw new NullReferenceException("can't desrila");
 
         var employeeRegistered = await _employeeContext.Employees.FirstOrDefaultAsync(x =>
             x.FirstName == deserializeEmployee.FirstName && x.LastName == deserializeEmployee.LastName);
 
-        
-        IOverTimeCalculator service = _overTimeServiceFactory.GetService(employeeRequestDto.OverTimeCalculator);
+
+        IOverTimeCalculator service = _overTimeServiceFactory.GetService(employeeRequest.OverTimeCalculator);
         if (employeeRegistered is null)
         {
             var emp = new Employee()
@@ -78,13 +77,8 @@ public class SalaryEmployeeController : ControllerBase
                 FirstName = deserializeEmployee.FirstName,
                 LastName = deserializeEmployee.LastName,
             };
-            var sal = new Salary()
-            {
-                BasicSalary = deserializeEmployee.BasicSalary,
-                Allowance = deserializeEmployee.Allowance,
-                Transportation = deserializeEmployee.Transportation,
-                Date = deserializeEmployee.Date,
-            };
+            var sal = new Salary(deserializeEmployee.BasicSalary, deserializeEmployee.Allowance,
+                deserializeEmployee.Transportation, deserializeEmployee.Date);
             sal.CalculateReceived(service);
             emp.addSalary(sal);
             await _employeeContext.Employees.AddAsync(emp);
@@ -92,15 +86,10 @@ public class SalaryEmployeeController : ControllerBase
         else
         {
             //todo change inject  
-            
-            
-            var sal = new Salary()
-            {
-                BasicSalary = deserializeEmployee.BasicSalary,
-                Allowance = deserializeEmployee.Allowance,
-                Transportation = deserializeEmployee.Transportation,
-                Date = deserializeEmployee.Date,
-            };
+
+
+            var sal = new Salary(deserializeEmployee.BasicSalary, deserializeEmployee.Allowance,
+                deserializeEmployee.Transportation, deserializeEmployee.Date);
             employeeRegistered.addSalary(sal);
             sal.CalculateReceived(service);
         }
@@ -110,8 +99,69 @@ public class SalaryEmployeeController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult Get()
+    public async Task<IActionResult> Get([FromQuery] GetSalaryEmployeeRequest request)
     {
+        var connectiStrin =
+            "Server=(localdb)\\mssqllocaldb;Database=EmployeeDB;Trusted_Connection=True;MultipleActiveResultSets=true";
+        var query = String.Format(
+            @"SELECT   e.[Id] as EmployeeId ,[FirstName],[LastName],s.[Id] as SalaryId,[BasicSalary],[Allowance],[Transportation],[Date],[ReceivedSalary]
+        FROM [EmployeeDB].[dbo].[Employee] e 
+            inner join [EmployeeDB].[dbo].Salaries s on e.Id = s.EmployeeId
+        where e.FirstName = '{0}' and e.LastName = '{1}' and s.Date = '{2}'", request.FirstName, request.LastName,
+            request.Date);
+
+        using (var con = new SqlConnection(connectiStrin))
+        {
+            var employeeDtoQuery = con.Query<EmployeeDtoQuery>(query).FirstOrDefault();
+            return Ok(employeeDtoQuery);
+        }
+    }
+
+    [HttpGet("Range")]
+    public IActionResult Get([FromQuery] GetRangeSalaryEmployeeRequest request)
+    {
+        var connectiStrin =
+            "Server=(localdb)\\mssqllocaldb;Database=EmployeeDB;Trusted_Connection=True;MultipleActiveResultSets=true";
+        var query = String.Format(
+            @"SELECT   e.[Id] as EmployeeId ,[FirstName],[LastName],s.[Id] as SalaryId,[BasicSalary],[Allowance],[Transportation],[Date],[ReceivedSalary]
+        FROM [EmployeeDB].[dbo].[Employee] e 
+            inner join [EmployeeDB].[dbo].Salaries s on e.Id = s.EmployeeId
+        where e.FirstName = '{0}' and e.LastName = '{1}' and s.Date >= '{2}'and s.Date <= '{3}'",
+            request.FirstName,
+            request.LastName,
+            request.FromDate,
+            request.ToDate);
+
+        using (var con = new SqlConnection(connectiStrin))
+        {
+            var employeeDtoQueries = con.Query<EmployeeDtoQuery>(query).ToList();
+            return Ok(employeeDtoQueries);
+        }
+    }
+
+    [HttpPut]
+    public async Task<IActionResult> Update([FromBody] UpdateSalaryEmployeeRequest request)
+    {
+        var sss = await _employeeContext.Salaries.FirstOrDefaultAsync(x => x.Id == request.SalaryId);
+
+
+        sss.Update(request.BasicSalary, request.Allowance,
+            request.Transportation, request.Date);
+
+        IOverTimeCalculator service = _overTimeServiceFactory.GetService(request.OverTimeCalculator);
+        sss.CalculateReceived(service);
+
+        await _employeeContext.SaveChangesAsync();
+        return Ok();
+    }
+
+    [HttpDelete("{salaryId}")]
+    public IActionResult Delete(int salaryId)
+    {
+        Salary s = new() { Id = salaryId };
+        _employeeContext.Salaries.Attach(s);
+        _employeeContext.Salaries.Remove(s);
+        _employeeContext.SaveChanges();
         return Ok();
     }
 }

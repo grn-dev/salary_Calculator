@@ -7,6 +7,6 @@ public class OverTimeCalculatorA : IOverTimeCalculator
 
     public decimal calculateOverTime(decimal basicSalary, decimal allowance)
     {
-        return basicSalary + allowance;
+        return basicSalary / 172; //how to calculate OverTime 
     }
 }

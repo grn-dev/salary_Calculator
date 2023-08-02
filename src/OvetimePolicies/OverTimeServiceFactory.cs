@@ -9,9 +9,9 @@ public class OverTimeServiceFactory
         _overTimeCalculators = timeCalculators;
     }
 
-    public IOverTimeCalculator GetService(string relayMode)
+    public IOverTimeCalculator GetService(string calculatorType)
     {
-        return _overTimeCalculators.FirstOrDefault(e => e.OverTimeCalculatorType == relayMode)
+        return _overTimeCalculators.FirstOrDefault(e => e.OverTimeCalculatorType == calculatorType)
                ?? throw new NotSupportedException();
     }
 }

@@ -1,11 +1,8 @@
-﻿using System.IO;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace SalaryCalculator.FunctionalTests;
+﻿namespace SalaryCalculator.FunctionalTests;
 
 public class SalaryCalculatorScenarioBase
 {
-    private const string ApiUrlBase = "api/v1/basket";
+    private const string ApiUrlBase = "http://localhost:49837";
 
     public TestServer CreateServer()
     {
@@ -36,25 +33,33 @@ public class SalaryCalculatorScenarioBase
 
     public static class Get
     {
-        public static string Get_ = "api/v1/SalaryCalculators";
-        public static string GetAll = "api/v1/SalaryCalculators";
+        public static string GetUrl(string firstName, string lastName, string Date)
+        {
+            return $"{ApiUrlBase}/SalaryEmployee?FirstName={firstName}&LastName={lastName}&Date={Date}";
+        }
+
+        public static string GetRangeUrl(string firstName, string lastName, string fromDate, string toDate)
+        {
+            return $"{ApiUrlBase}/SalaryEmployee/Range?FirstName={firstName}" +
+                   $"&LastName={lastName}&FromDate={fromDate}&ToDate={toDate}";
+        }
     }
 
     public static class Put
     {
-        public static string CancelSalaryCalculator = "api/v1/SalaryCalculators/cancel";
+        public static string PutUrl = $"{ApiUrlBase}/SalaryEmployee";
     }
 
     public static class Post
     {
         public static string PostSalaryEmployee(string datatype)
         {
-            return $"/SalaryEmployee/{datatype}/SalaryEmployee";
+            return $"{ApiUrlBase}/SalaryEmployee/{datatype}/SalaryEmployee";
         }
     }
 
     public static class Delete
     {
-        public static string CancelSalaryCalculator = "api/v1/SalaryCalculators/cancel";
+        public static string DeleteUrl = $"{ApiUrlBase}/SalaryCalculators";
     }
 }
