@@ -123,6 +123,21 @@ namespace SalaryCalculatoring.IntegrationTests
         }
 
         [Fact]
+        public async Task When_GetRange_Expect_Count_bigger_Two()
+        {
+            using var server = CreateServer();
+            var url = Get.GetRangeUrl("Ali", "Ahmadi", "14000801", "14020801");
+            var response = await server.CreateClient()
+                .GetAsync(url);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            response.EnsureSuccessStatusCode();
+
+            var employee = response.Content.ReadResponse<List<EmployeeDtoQuery>>();
+            Assert.Equal(true, employee.Count > 2);
+        }
+
+        [Fact]
         public async Task When_Post_Get_Expect_response_ok_status_code()
         {
             using var server = CreateServer();
