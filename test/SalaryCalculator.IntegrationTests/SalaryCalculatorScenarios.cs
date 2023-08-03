@@ -120,7 +120,7 @@ namespace SalaryCalculatoring.IntegrationTests
 
 
             var employee = response.Content.ReadResponse<EmployeeDtoQuery>();
-            var basicSalaryUpdate  = employee.BasicSalary+10000;
+            var basicSalaryUpdate = employee.BasicSalary + 10000;
 
             UpdateSalaryEmployeeRequest updateSalaryEmployeeRequest = new UpdateSalaryEmployeeRequest()
             {
@@ -226,6 +226,60 @@ namespace SalaryCalculatoring.IntegrationTests
             var ReceivedSalaryMasoud = 50290.697674418604651162790698;
             var ReceivedSalaryMasoudRound = Math.Round(ReceivedSalaryMasoud, 0);
             Assert.Equal(ReceivedSalaryMasoudRound, Math.Round(Convert.ToDouble(employee.ReceivedSalary), 0));
+
+            #endregion
+        }
+
+
+        [Fact]
+        public async Task When_Delete_Expect_response_ok_status_code()
+        {
+            using var server = CreateServer();
+            var firstName = "Masoud";
+            var LastName = "RezaeiPour";
+            var Date = "14020801";
+
+            #region Register
+
+            var Json = $@"{{""FirstName"": ""{firstName}"",
+            ""LastName"": ""{LastName}"",
+            ""BasicSalary"": 50000.0,
+            ""Allowance"": 3000.0,
+            ""Transportation"": 2000.0,
+            ""Date"": ""{Date}""}}";
+            var request = new RegisterSalaryEmployeeRequest()
+            {
+                Data = Json,
+                OverTimeCalculator = "CalcurlatorB"
+            };
+            var dataType = "json";
+            var responseRegister = await server.CreateClient()
+                .PostAsync(Post.PostSalaryEmployee(dataType),
+                    request.CreateContent());
+
+            Assert.Equal(HttpStatusCode.OK, responseRegister.StatusCode);
+
+            #endregion
+
+            #region Get
+
+            var url = Get.GetUrl(firstName, LastName, Date);
+            var response = await server.CreateClient()
+                .GetAsync(url);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            response.EnsureSuccessStatusCode();
+
+            var employee = response.Content.ReadResponse<EmployeeDtoQuery>();
+            Assert.NotNull(employee.SalaryId);
+
+            #endregion
+
+            #region Delete
+ 
+            var responsePut = await server.CreateClient()
+                .DeleteAsync(string.Format(Delete.DeleteUrl, employee.SalaryId));
+            Assert.Equal(HttpStatusCode.OK, responsePut.StatusCode);
 
             #endregion
         }

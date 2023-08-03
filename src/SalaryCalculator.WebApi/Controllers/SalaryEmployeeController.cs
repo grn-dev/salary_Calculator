@@ -156,12 +156,13 @@ public class SalaryEmployeeController : ControllerBase
     }
 
     [HttpDelete("{salaryId}")]
-    public IActionResult Delete(int salaryId)
+    public async Task<IActionResult> Delete(int salaryId)
     {
-        Salary s = new() { Id = salaryId };
-        _employeeContext.Salaries.Attach(s);
-        _employeeContext.Salaries.Remove(s);
-        _employeeContext.SaveChanges();
+        var salary = await _employeeContext.Salaries.FirstOrDefaultAsync(x => x.Id == salaryId);
+        if (salary is null)
+            return NotFound();
+        _employeeContext.Salaries.Remove(salary);
+        await _employeeContext.SaveChangesAsync();
         return Ok();
     }
 }

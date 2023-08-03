@@ -59,7 +59,7 @@ public class SalaryCalculatorScenarioBase
     }
 
     public static class Delete
-    {
-        public static string DeleteUrl = $"{ApiUrlBase}/SalaryCalculators";
+    { 
+        public static string DeleteUrl = $@"{ApiUrlBase}/SalaryEmployee/{{0}}"; 
     }
 }
