@@ -36,25 +36,27 @@ public class SalaryEmployeeController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] GetSalaryEmployeeQueries queries)
     {
-        return Ok(_mediator.Send(queries));
+        return Ok(await _mediator.Send(queries));
     }
 
     [HttpGet("Range")]
-    public IActionResult Get([FromQuery] GetRangeSalaryEmployeeQueries queries)
+    public async Task<IActionResult> Get([FromQuery] GetRangeSalaryEmployeeQueries queries)
     {
-        return Ok(_mediator.Send(queries));
+        return Ok(await _mediator.Send(queries));
     }
 
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] UpdateSalaryEmployeeCommand command)
     {
-        return Ok(_mediator.Send(command));
+        await _mediator.Send(command);
+        return Ok();
     }
 
     [HttpDelete("{salaryId}")]
     public async Task<IActionResult> Delete(int salaryId)
     {
         DeleteSalaryCommand command = new() { SalaryId = salaryId };
-        return Ok(_mediator.Send(command));
+        await _mediator.Send(command);
+        return Ok();
     }
 }

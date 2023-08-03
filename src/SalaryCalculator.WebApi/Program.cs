@@ -1,5 +1,9 @@
+using System.Reflection;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SalaryCalculator.Core;
+using SalaryCalculator.WebApi.Application.Behaviors;
+using SalaryCalculator.WebApi.Application.Commands;
 using SalaryCalculator.WebApi.Infrastructure;
 
 public class Program
@@ -11,10 +15,17 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+        
         builder.Services.AddScoped<IOverTimeCalculator, OverTimeCalculatorA>();
         builder.Services.AddScoped<IOverTimeCalculator, OverTimeCalculatorB>();
         builder.Services.AddScoped<OverTimeServiceFactory>();
         builder.Services.AddScoped<IOverTimeCalculator, OverTimeCalculatorC>();
+
+        builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidatorBehavior<,>)); 
+        //builder.Services.AddMediatR(Assembly.GetExecutingAssembly()); 
+        builder.Services.AddMediatR(cfg=>cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
+
+
         builder.Services.AddDbContext<EmployeeContext>(opt => opt
             .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
