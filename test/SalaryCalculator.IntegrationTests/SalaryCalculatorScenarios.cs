@@ -108,6 +108,45 @@ namespace SalaryCalculatoring.IntegrationTests
         }
 
         [Fact]
+        public async Task When_Update_SalaryInfo_Expect_response_ok_status_code_changed_info()
+        {
+            using var server = CreateServer();
+
+            var url = Get.GetUrl("Amir", "Afshani", "14020801");
+            var response = await server.CreateClient()
+                .GetAsync(url);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            response.EnsureSuccessStatusCode();
+
+
+            var employee = response.Content.ReadResponse<EmployeeDtoQuery>();
+            var basicSalaryUpdate  = employee.BasicSalary+10000;
+
+            UpdateSalaryEmployeeRequest updateSalaryEmployeeRequest = new UpdateSalaryEmployeeRequest()
+            {
+                Allowance = employee.Allowance,
+                OverTimeCalculator = "CalcurlatorA",
+                Date = employee.Date,
+                BasicSalary = basicSalaryUpdate,
+                Transportation = employee.Transportation,
+                SalaryId = employee.SalaryId,
+            };
+
+            var responsePut = await server.CreateClient()
+                .PutAsync(Put.PutUrl, updateSalaryEmployeeRequest.CreateContent());
+            Assert.Equal(HttpStatusCode.OK, responsePut.StatusCode);
+
+
+            var responseAfterUpdate = await server.CreateClient()
+                .GetAsync(url);
+            Assert.Equal(HttpStatusCode.OK, responseAfterUpdate.StatusCode);
+            responseAfterUpdate.EnsureSuccessStatusCode();
+
+            var employeeUpdated = responseAfterUpdate.Content.ReadResponse<EmployeeDtoQuery>();
+            Assert.Equal(basicSalaryUpdate, employeeUpdated.BasicSalary);
+        }
+
+        [Fact]
         public async Task When_GetRange_Expect_response_ok_status_code()
         {
             using var server = CreateServer();
