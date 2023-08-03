@@ -21,7 +21,7 @@ public class GetSalaryCalculatorScenarios : SalaryCalculatorScenarioBase
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         response.EnsureSuccessStatusCode();
 
-        var employee = response.Content.ReadResponse<EmployeeDtoQuery>();
+        var employee = response.Content.ReadResponse<GetSalaryEmployeeQueriesResult>();
         Assert.NotNull(employee.EmployeeId);
         Assert.NotNull(employee.Allowance);
         Assert.NotNull(employee.Date);
@@ -42,10 +42,10 @@ public class GetSalaryCalculatorScenarios : SalaryCalculatorScenarioBase
         response.EnsureSuccessStatusCode();
 
 
-        var employee = response.Content.ReadResponse<EmployeeDtoQuery>();
+        var employee = response.Content.ReadResponse<GetSalaryEmployeeQueriesResult>();
         var basicSalaryUpdate = employee.BasicSalary + 10000;
 
-        UpdateSalaryEmployeeRequest updateSalaryEmployeeRequest = new UpdateSalaryEmployeeRequest()
+        UpdateSalaryEmployeeCommand updateSalaryEmployeeCommand = new UpdateSalaryEmployeeCommand()
         {
             Allowance = employee.Allowance,
             OverTimeCalculator = "CalcurlatorA",
@@ -56,7 +56,7 @@ public class GetSalaryCalculatorScenarios : SalaryCalculatorScenarioBase
         };
 
         var responsePut = await server.CreateClient()
-            .PutAsync(Put.PutUrl, updateSalaryEmployeeRequest.CreateContent());
+            .PutAsync(Put.PutUrl, updateSalaryEmployeeCommand.CreateContent());
         Assert.Equal(HttpStatusCode.OK, responsePut.StatusCode);
 
 
@@ -65,7 +65,7 @@ public class GetSalaryCalculatorScenarios : SalaryCalculatorScenarioBase
         Assert.Equal(HttpStatusCode.OK, responseAfterUpdate.StatusCode);
         responseAfterUpdate.EnsureSuccessStatusCode();
 
-        var employeeUpdated = responseAfterUpdate.Content.ReadResponse<EmployeeDtoQuery>();
+        var employeeUpdated = responseAfterUpdate.Content.ReadResponse<GetSalaryEmployeeQueriesResult>();
         Assert.Equal(basicSalaryUpdate, employeeUpdated.BasicSalary);
     }
 
@@ -80,7 +80,7 @@ public class GetSalaryCalculatorScenarios : SalaryCalculatorScenarioBase
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         response.EnsureSuccessStatusCode();
 
-        var employee = response.Content.ReadResponse<List<EmployeeDtoQuery>>();
+        var employee = response.Content.ReadResponse<List<GetSalaryEmployeeQueriesResult>>();
         Assert.NotEqual(0, employee.Count);
     }
 
@@ -95,7 +95,7 @@ public class GetSalaryCalculatorScenarios : SalaryCalculatorScenarioBase
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         response.EnsureSuccessStatusCode();
 
-        var employee = response.Content.ReadResponse<List<EmployeeDtoQuery>>();
+        var employee = response.Content.ReadResponse<List<GetSalaryEmployeeQueriesResult>>();
         Assert.Equal(true, employee.Count > 2);
     }
 
@@ -138,7 +138,7 @@ public class GetSalaryCalculatorScenarios : SalaryCalculatorScenarioBase
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         response.EnsureSuccessStatusCode();
 
-        var employee = response.Content.ReadResponse<EmployeeDtoQuery>();
+        var employee = response.Content.ReadResponse<GetSalaryEmployeeQueriesResult>();
         Assert.NotNull(employee.EmployeeId);
         Assert.NotNull(employee.Allowance);
         Assert.NotNull(employee.Date);
@@ -192,7 +192,7 @@ public class GetSalaryCalculatorScenarios : SalaryCalculatorScenarioBase
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         response.EnsureSuccessStatusCode();
 
-        var employee = response.Content.ReadResponse<EmployeeDtoQuery>();
+        var employee = response.Content.ReadResponse<GetSalaryEmployeeQueriesResult>();
         Assert.NotNull(employee.SalaryId);
 
         #endregion

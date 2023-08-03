@@ -1,14 +1,6 @@
-﻿using System.Xml.Serialization;
-using Dapper;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using SalaryCalculator.Core;
-using SalaryCalculator.Core.Models;
-using SalaryCalculator.WebApi.Infrastructure;
-using SalaryCalculator.WebApi.Models;
-using SalaryCalculator.WebApi.Services;
+using SalaryCalculator.WebApi.Adapter;
 
 namespace SalaryCalculator.WebApi.Controllers;
 
@@ -16,153 +8,53 @@ namespace SalaryCalculator.WebApi.Controllers;
 [Route("[controller]")]
 public class SalaryEmployeeController : ControllerBase
 {
-    private readonly ISalaryEmployee _salaryEmployee;
-    private readonly EmployeeContext _employeeContext;
-    private readonly OverTimeServiceFactory _overTimeServiceFactory;
+    private readonly IMediator _mediator;
 
-
-    public SalaryEmployeeController(ISalaryEmployee salaryEmployee, EmployeeContext employeeContext,
-        OverTimeServiceFactory overTimeServiceFactory)
+    public SalaryEmployeeController(IMediator mediator)
     {
-        _salaryEmployee = salaryEmployee;
-        _employeeContext = employeeContext;
-        _overTimeServiceFactory = overTimeServiceFactory;
+        _mediator = mediator;
     }
 
     [HttpPost]
     [Route("{datatype}/[controller]")]
     public async Task<IActionResult> HttpPost(string datatype, RegisterSalaryEmployeeRequest employeeRequest)
     {
-        EmployeeDto deserializeEmployee = new();
-        switch (datatype)
+        ISalaryEmployeeAdapter employeeAdapter = datatype switch
         {
-            case "json":
-            {
-                deserializeEmployee = JsonConvert.DeserializeObject<EmployeeDto>(employeeRequest.Data);
-            }
-                break;
-            case "xml":
-            {
-                XmlSerializer serializer = new XmlSerializer(typeof(EmployeeDto));
-                using (TextReader reader = new StringReader(employeeRequest.Data))
-                {
-                    deserializeEmployee = (EmployeeDto)serializer.Deserialize(reader);
-                }
-            }
-                break;
-            case "cs":
-            {
-                //todo what cs
-            }
-                break;
-            case "custom":
-            {
-                deserializeEmployee = employeeRequest.Data.GetEmployee();
-            }
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(datatype);
-        }
-
-
-        var employeeRegistered = await _employeeContext.Employees.FirstOrDefaultAsync(x =>
-            x.FirstName == deserializeEmployee.FirstName && x.LastName == deserializeEmployee.LastName);
-
-
-        IOverTimeCalculator service = _overTimeServiceFactory.GetService(employeeRequest.OverTimeCalculator);
-        if (employeeRegistered is null)
-        {
-            var emp = new Employee()
-            {
-                FirstName = deserializeEmployee.FirstName,
-                LastName = deserializeEmployee.LastName,
-            };
-            var sal = new Salary(deserializeEmployee.BasicSalary, deserializeEmployee.Allowance,
-                deserializeEmployee.Transportation, deserializeEmployee.Date);
-            sal.CalculateReceived(service);
-            emp.addSalary(sal);
-            await _employeeContext.Employees.AddAsync(emp);
-        }
-        else
-        {
-            //todo change inject  
-
-
-            var sal = new Salary(deserializeEmployee.BasicSalary, deserializeEmployee.Allowance,
-                deserializeEmployee.Transportation, deserializeEmployee.Date);
-            employeeRegistered.addSalary(sal);
-            sal.CalculateReceived(service);
-        }
-
-        await _employeeContext.SaveChangesAsync();
+            "json" => new JsonAdapter(employeeRequest.Data),
+            "xml" => new XmlAdapter(employeeRequest.Data),
+            "cs" => new CsAdapter(employeeRequest.Data),
+            "custom" => new CustomAdapter(employeeRequest.Data),
+            _ => throw new NotImplementedException()
+        };
+        var command = employeeAdapter.AdapteToCreateCommand();
+        command.OverTimeCalculator = employeeRequest.OverTimeCalculator;
+        _mediator.Send(command);
         return Ok();
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] GetSalaryEmployeeRequest request)
+    public async Task<IActionResult> Get([FromQuery] GetSalaryEmployeeQueries queries)
     {
-        var connectiStrin =
-            "Server=(localdb)\\mssqllocaldb;Database=EmployeeDB;Trusted_Connection=True;MultipleActiveResultSets=true";
-        var query = String.Format(
-            @"SELECT   e.[Id] as EmployeeId ,[FirstName],[LastName],s.[Id] as SalaryId,[BasicSalary],[Allowance],[Transportation],[Date],[ReceivedSalary]
-        FROM [EmployeeDB].[dbo].[Employee] e 
-            inner join [EmployeeDB].[dbo].Salaries s on e.Id = s.EmployeeId
-        where e.FirstName = '{0}' and e.LastName = '{1}' and s.Date = '{2}'", request.FirstName, request.LastName,
-            request.Date);
-
-        using (var con = new SqlConnection(connectiStrin))
-        {
-            var employeeDtoQuery = con.Query<EmployeeDtoQuery>(query).FirstOrDefault();
-            return Ok(employeeDtoQuery);
-        }
+        return Ok(_mediator.Send(queries));
     }
 
     [HttpGet("Range")]
-    public IActionResult Get([FromQuery] GetRangeSalaryEmployeeRequest request)
+    public IActionResult Get([FromQuery] GetRangeSalaryEmployeeQueries queries)
     {
-        var connectiStrin =
-            "Server=(localdb)\\mssqllocaldb;Database=EmployeeDB;Trusted_Connection=True;MultipleActiveResultSets=true";
-        var query = String.Format(
-            @"SELECT   e.[Id] as EmployeeId ,[FirstName],[LastName],s.[Id] as SalaryId,[BasicSalary],[Allowance],[Transportation],[Date],[ReceivedSalary]
-        FROM [EmployeeDB].[dbo].[Employee] e 
-            inner join [EmployeeDB].[dbo].Salaries s on e.Id = s.EmployeeId
-        where e.FirstName = '{0}' and e.LastName = '{1}' and s.Date >= '{2}'and s.Date <= '{3}'",
-            request.FirstName,
-            request.LastName,
-            request.FromDate,
-            request.ToDate);
-
-        using (var con = new SqlConnection(connectiStrin))
-        {
-            var employeeDtoQueries = con.Query<EmployeeDtoQuery>(query).ToList();
-            return Ok(employeeDtoQueries);
-        }
+        return Ok(_mediator.Send(queries));
     }
 
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody] UpdateSalaryEmployeeRequest request)
+    public async Task<IActionResult> Update([FromBody] UpdateSalaryEmployeeCommand command)
     {
-        var sss = await _employeeContext.Salaries.FirstOrDefaultAsync(x => x.Id == request.SalaryId);
-
-
-        sss.Update(request.BasicSalary, request.Allowance,
-            request.Transportation, request.Date);
-
-        IOverTimeCalculator service = _overTimeServiceFactory.GetService(request.OverTimeCalculator);
-        sss.CalculateReceived(service);
-
-        await _employeeContext.SaveChangesAsync();
-        return Ok();
+        return Ok(_mediator.Send(command));
     }
 
     [HttpDelete("{salaryId}")]
     public async Task<IActionResult> Delete(int salaryId)
     {
-        var salary = await _employeeContext.Salaries.FirstOrDefaultAsync(x => x.Id == salaryId);
-        if (salary is null)
-            return NotFound();
-        _employeeContext.Salaries.Remove(salary);
-        await _employeeContext.SaveChangesAsync();
-        return Ok();
+        DeleteSalaryCommand command = new() { SalaryId = salaryId };
+        return Ok(_mediator.Send(command));
     }
 }
