@@ -2,14 +2,6 @@
 
 WebApi for Salary Calculator
 
-EntityFrameworkCore
-MediatR
-FluentValidation
-Dapper
-xunit
-Moq
-Docker
-
 <ul dir="auto">
 <li>Using EntityFrameworkCore</li>
 <li>Using MediatR</li>
@@ -35,5 +27,6 @@ Getting Started</h2>
 <br> 
 
 http://localhost:5225/swagger/index.html
+
 
  
