@@ -1,12 +1,9 @@
-
-
 using SalaryCalculator.Core;
 
 namespace SalaryCalculator.UnitTest;
 
 public class OverTimeServiceFactoryTest
-{ 
-
+{
     [Fact]
     public void When_calculatorType_is_CalcurlatorA_Expect_Type_Is_OverTimeCalculatorA()
     {
@@ -28,7 +25,7 @@ public class OverTimeServiceFactoryTest
         Assert.NotEqual(calculatorB.GetType(), service.GetType());
         Assert.NotEqual(calculatorC.GetType(), service.GetType());
     }
-    
+
     [Fact]
     public void When_calculatorType_is_CalcurlatorB_Expect_Type_Is_OverTimeCalculatorB()
     {
@@ -47,11 +44,11 @@ public class OverTimeServiceFactoryTest
 
         //Assert 
         Assert.Equal(calculatorB.GetType(), service.GetType());
-        
+
         Assert.NotEqual(calculatorA.GetType(), service.GetType());
         Assert.NotEqual(calculatorC.GetType(), service.GetType());
     }
-    
+
     [Fact]
     public void When_calculatorType_is_CalcurlatorC_Expect_Type_Is_OverTimeCalculatorC()
     {
@@ -70,8 +67,36 @@ public class OverTimeServiceFactoryTest
 
         //Assert 
         Assert.Equal(calculatorC.GetType(), service.GetType());
-        
+
         Assert.NotEqual(calculatorA.GetType(), service.GetType());
         Assert.NotEqual(calculatorB.GetType(), service.GetType());
     }
+
+    [Fact]
+    public void When_Valid_BasicSalary_Expect_True_Calculate()
+    {
+        //arrange 
+        OverTimeCalculatorA calculatorA = new();
+
+        //act
+        var overTime = calculatorA.calculateOverTime(860000, 12);
+
+        //Assert 
+        Assert.Equal(5000, overTime);
+    }
+    
+    [Fact]
+    public void When_Valid_BasicSalary_Expect_Calculate()
+    {
+        //arrange 
+        OverTimeCalculatorA calculatorA = new();
+
+        //act
+        var overTime = calculatorA.calculateOverTime(860000, 12);
+
+        //Assert 
+        Assert.Equal(5000, overTime);
+    }
+
+    
 }
