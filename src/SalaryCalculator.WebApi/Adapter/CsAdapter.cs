@@ -8,7 +8,7 @@ public class CsAdapter: ISalaryEmployeeAdapter
     {
     }
 
-    public override CreateSalaryEmployeeCommand AdapteToCreateCommand()
+    public override CreateSalaryEmployeeCommand AdaptToCreateCommand()
     {
         throw new NotImplementedException();
     }

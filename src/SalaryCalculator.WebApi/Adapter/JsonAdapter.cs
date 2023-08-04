@@ -9,7 +9,7 @@ public class JsonAdapter : ISalaryEmployeeAdapter
     {
     }
 
-    public override CreateSalaryEmployeeCommand AdapteToCreateCommand()
+    public override CreateSalaryEmployeeCommand AdaptToCreateCommand()
     {
         return JsonConvert.DeserializeObject<CreateSalaryEmployeeCommand>(inputData);
     }

@@ -9,7 +9,7 @@ public class XmlAdapter : ISalaryEmployeeAdapter
     {
     }
 
-    public override CreateSalaryEmployeeCommand AdapteToCreateCommand()
+    public override CreateSalaryEmployeeCommand AdaptToCreateCommand()
     {
         XmlSerializer serializer = new XmlSerializer(typeof(CreateSalaryEmployeeCommand));
         using (TextReader reader = new StringReader(inputData))

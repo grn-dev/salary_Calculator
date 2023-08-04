@@ -8,7 +8,7 @@ public class CustomAdapter : ISalaryEmployeeAdapter
     {
     }
 
-    public override CreateSalaryEmployeeCommand AdapteToCreateCommand()
+    public override CreateSalaryEmployeeCommand AdaptToCreateCommand()
     {
         var split = inputData.Split("/");
         return new CreateSalaryEmployeeCommand()

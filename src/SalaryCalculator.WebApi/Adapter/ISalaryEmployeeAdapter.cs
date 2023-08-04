@@ -10,6 +10,6 @@ public abstract class ISalaryEmployeeAdapter
     }
 
     public string inputData { get; set; }
-    public abstract CreateSalaryEmployeeCommand AdapteToCreateCommand();
+    public abstract CreateSalaryEmployeeCommand AdaptToCreateCommand();
 }
  

@@ -27,7 +27,7 @@ public class SalaryEmployeeController : ControllerBase
             "custom" => new CustomAdapter(employeeRequest.Data),
             _ => throw new NotImplementedException()
         };
-        var command = employeeAdapter.AdapteToCreateCommand();
+        var command = employeeAdapter.AdaptToCreateCommand();
         command.OverTimeCalculator = employeeRequest.OverTimeCalculator;
         _mediator.Send(command);
         return Ok();
