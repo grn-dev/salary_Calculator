@@ -3,7 +3,6 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SalaryCalculator.Core;
 using SalaryCalculator.WebApi.Application.Behaviors;
-using SalaryCalculator.WebApi.Application.Commands;
 using SalaryCalculator.WebApi.Infrastructure;
 
 public class Program

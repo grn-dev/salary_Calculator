@@ -1,4 +1,9 @@
-﻿namespace SalaryCalculator.FunctionalTests;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using SalaryCalculator.WebApi.Infrastructure;
+
+namespace SalaryCalculator.FunctionalTests;
 
 public class SalaryCalculatorScenarioBase
 {
@@ -16,15 +21,14 @@ public class SalaryCalculatorScenarioBase
         {
             builder.ConfigureServices(services =>
             {
-                //services.AddSingleton<IStartupFilter, AuthStartupFilter>();
+                // services.RemoveAll<DbContextOptions<EmployeeContext>>(); 
+                // services.AddDbContext<EmployeeContext>(
+                //     opt => opt.UseInMemoryDatabase("InMemoryEmployeeContext")); 
+                //for use In Memory EF but in get use dapper not to use
+                
             });
 
-            builder.ConfigureAppConfiguration(c =>
-            {
-                //var directory = Path.GetDirectoryName(typeof(SalaryCalculatorScenarioBase).Assembly.Location)!;
-
-                //c.AddJsonFile(Path.Combine(directory, "appsettings.SalaryCalculator.json"), optional: false);
-            });
+            builder.ConfigureAppConfiguration(c => { });
 
             return base.CreateHost(builder);
         }
@@ -59,7 +63,7 @@ public class SalaryCalculatorScenarioBase
     }
 
     public static class Delete
-    { 
-        public static string DeleteUrl = $@"{ApiUrlBase}/SalaryEmployee/{{0}}"; 
+    {
+        public static string DeleteUrl = $@"{ApiUrlBase}/SalaryEmployee/{{0}}";
     }
 }

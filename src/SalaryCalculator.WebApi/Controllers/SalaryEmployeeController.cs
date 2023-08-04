@@ -29,7 +29,7 @@ public class SalaryEmployeeController : ControllerBase
         };
         var command = employeeAdapter.AdaptToCreateCommand();
         command.OverTimeCalculator = employeeRequest.OverTimeCalculator;
-        _mediator.Send(command);
+        await _mediator.Send(command);
         return Ok();
     }
 
