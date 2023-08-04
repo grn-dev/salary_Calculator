@@ -14,15 +14,15 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-        
+
         builder.Services.AddScoped<IOverTimeCalculator, OverTimeCalculatorA>();
         builder.Services.AddScoped<IOverTimeCalculator, OverTimeCalculatorB>();
         builder.Services.AddScoped<OverTimeServiceFactory>();
         builder.Services.AddScoped<IOverTimeCalculator, OverTimeCalculatorC>();
 
-        builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidatorBehavior<,>)); 
+        builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidatorBehavior<,>));
         //builder.Services.AddMediatR(Assembly.GetExecutingAssembly()); 
-        builder.Services.AddMediatR(cfg=>cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
+        builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
 
 
         builder.Services.AddDbContext<EmployeeContext>(opt => opt
@@ -30,11 +30,9 @@ public class Program
 
         var app = builder.Build();
 
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
+
+        app.UseSwagger();
+        app.UseSwaggerUI();
 
         app.UseHttpsRedirection();
 
