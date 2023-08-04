@@ -84,7 +84,7 @@ public class OverTimeServiceFactoryTest
         //Assert 
         Assert.Equal(5000, overTime);
     }
-    
+
     [Fact]
     public void When_Valid_BasicSalary_Expect_Calculate()
     {
@@ -97,6 +97,4 @@ public class OverTimeServiceFactoryTest
         //Assert 
         Assert.Equal(5000, overTime);
     }
-
-    
 }

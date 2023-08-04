@@ -25,6 +25,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\OvetimePolicies\OvetimePolicies.csproj" />
+      <ProjectReference Include="..\..\src\SalaryCalculator.WebApi\SalaryCalculator.WebApi.csproj" />
     </ItemGroup>
 
 </Project>

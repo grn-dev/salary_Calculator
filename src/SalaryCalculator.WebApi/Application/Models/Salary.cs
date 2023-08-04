@@ -2,12 +2,21 @@
 
 public class Salary
 {
-    public Salary()
+    private Salary()
     {
     }
 
     public Salary(decimal basicSalary, decimal allowance, decimal transportation, string date)
     {
+        if (date.Length != 8)
+            throw new Exception("date invalid");
+
+        if (basicSalary <= 0)
+            throw new Exception("basicSalary must bigger than zero");
+        
+        if (transportation > basicSalary)
+            throw new Exception("transportation should not be more than a basicSalary");
+
         BasicSalary = basicSalary;
         Allowance = allowance;
         Transportation = transportation;
@@ -31,6 +40,15 @@ public class Salary
 
     public void Update(decimal basicSalary, decimal allowance, decimal transportation, string date)
     {
+        if (date.Length != 8)
+            throw new Exception("date invalid");
+
+        if (basicSalary <= 0)
+            throw new Exception("basicSalary must bigger than zero");
+
+        if (transportation > basicSalary)
+            throw new Exception("transportation should not be more than a basicSalary");
+
         BasicSalary = basicSalary;
         Allowance = allowance;
         Transportation = transportation;
