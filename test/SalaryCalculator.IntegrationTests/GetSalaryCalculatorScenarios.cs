@@ -14,7 +14,35 @@ public class GetSalaryCalculatorScenarios : SalaryCalculatorScenarioBase
     public async Task When_Get_Expect_response_ok_status_code()
     {
         using var server = CreateServer();
-        var url = Get.GetUrl("Amir", "Afshani", "14020801");
+
+        var firstName = "Ehsan";
+        var lastName = "Absian";
+        var date = "14020801";
+
+        #region Register
+
+        var Json = $@"{{""FirstName"": ""{firstName}"",
+            ""LastName"": ""{lastName}"",
+            ""BasicSalary"": 50000.0,
+            ""Allowance"": 3000.0,
+            ""Transportation"": 2000.0,
+            ""Date"": ""{date}""}}";
+        var request = new RegisterSalaryEmployeeRequest()
+        {
+            Data = Json,
+            OverTimeCalculator = "CalcurlatorB"
+        };
+        var dataType = "json";
+        var responseRegister = await server.CreateClient()
+            .PostAsync(Post.PostSalaryEmployee(dataType),
+                request.CreateContent());
+
+        Assert.Equal(HttpStatusCode.OK, responseRegister.StatusCode);
+
+        #endregion
+
+
+        var url = Get.GetUrl(firstName, lastName, date);
         var response = await server.CreateClient()
             .GetAsync(url);
 
@@ -35,7 +63,33 @@ public class GetSalaryCalculatorScenarios : SalaryCalculatorScenarioBase
     {
         using var server = CreateServer();
 
-        var url = Get.GetUrl("Amir", "Afshani", "14020801");
+        var firstName = "Hassan";
+        var lastName = "ShameiZadeh";
+        var date = "14030801";
+
+        #region Register
+
+        var Json = $@"{{""FirstName"": ""{firstName}"",
+            ""LastName"": ""{lastName}"",
+            ""BasicSalary"": 560000.0,
+            ""Allowance"": 37000.0,
+            ""Transportation"": 2000.0,
+            ""Date"": ""{date}""}}";
+        var request = new RegisterSalaryEmployeeRequest()
+        {
+            Data = Json,
+            OverTimeCalculator = "CalcurlatorB"
+        };
+        var dataType = "json";
+        var responseRegister = await server.CreateClient()
+            .PostAsync(Post.PostSalaryEmployee(dataType),
+                request.CreateContent());
+
+        Assert.Equal(HttpStatusCode.OK, responseRegister.StatusCode);
+
+        #endregion
+
+        var url = Get.GetUrl(firstName, lastName, date);
         var response = await server.CreateClient()
             .GetAsync(url);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -73,7 +127,45 @@ public class GetSalaryCalculatorScenarios : SalaryCalculatorScenarioBase
     public async Task When_GetRange_Expect_response_ok_status_code()
     {
         using var server = CreateServer();
-        var url = Get.GetRangeUrl("Amir", "Afshani", "14000801", "14020801");
+
+
+        var firstName = "Ali";
+        var lastName = "MehdiKhani";
+        List<string> dates = new List<string>()
+        {
+            "14020401",
+            "14020501",
+            "14020601",
+            "14020701",
+            "14020801",
+            "14020901"
+        };
+        foreach (var date in dates)
+        {
+            #region Register
+
+            var Json = $@"{{""FirstName"": ""{firstName}"",
+            ""LastName"": ""{lastName}"",
+            ""BasicSalary"": 50000.0,
+            ""Allowance"": 3000.0,
+            ""Transportation"": 2000.0,
+            ""Date"": ""{date}""}}";
+            var request = new RegisterSalaryEmployeeRequest()
+            {
+                Data = Json,
+                OverTimeCalculator = "CalcurlatorB"
+            };
+            var dataType = "json";
+            var responseRegister = await server.CreateClient()
+                .PostAsync(Post.PostSalaryEmployee(dataType),
+                    request.CreateContent());
+
+            Assert.Equal(HttpStatusCode.OK, responseRegister.StatusCode);
+
+            #endregion
+        }
+
+        var url = Get.GetRangeUrl(firstName, lastName, "14020401", "14020901");
         var response = await server.CreateClient()
             .GetAsync(url);
 
@@ -81,7 +173,7 @@ public class GetSalaryCalculatorScenarios : SalaryCalculatorScenarioBase
         response.EnsureSuccessStatusCode();
 
         var employee = response.Content.ReadResponse<List<GetSalaryEmployeeQueriesResult>>();
-        Assert.NotEqual(0, employee.Count);
+        Assert.True(employee.Count >= 6);
     }
 
 
